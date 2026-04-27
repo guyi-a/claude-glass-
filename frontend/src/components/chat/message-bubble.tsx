@@ -100,7 +100,7 @@ function ToolCallRow({
         </button>
 
         {pending && onAllow && onDeny && (
-          <div className="px-4 py-3 border-t border-[var(--accent)]/20 flex items-center justify-end gap-2">
+          <div className="px-4 py-3 border-t border-[var(--accent)]/20 flex items-center justify-end gap-2 pr-12">
             <button
               onClick={onDeny}
               className="px-4 py-1.5 rounded-lg text-[13px] font-medium
