@@ -28,7 +28,7 @@ export function useChat(sessionId: string) {
   const [isStreaming, setIsStreaming] = useState(false)
   const [workingDirectory, setWorkingDirectory] = useState('/Users/guyi')
   const [model, setModel] = useState('pa/claude-sonnet-4-6')
-  const [approval, setApproval] = useState(false)
+  const [approval, setApproval] = useState(true)
   const [pendingPermission, setPendingPermission] = useState<PendingPermission | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const sendRef = useRef<((content: string, wdOverride?: string) => Promise<void>) | null>(null)
