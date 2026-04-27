@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useConfig } from './use-config'
 
 export type ToolCall = {
   id: string
@@ -24,15 +25,25 @@ export type PendingPermission = {
 }
 
 export function useChat(sessionId: string) {
+  const { defaultWorkingDirectory, defaultModel, _loaded } = useConfig()
   const [messages, setMessages] = useState<Message[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
-  const [workingDirectory, setWorkingDirectory] = useState('/Users/guyi')
-  const [model, setModel] = useState('pa/claude-sonnet-4-6')
+  const [workingDirectory, setWorkingDirectory] = useState(defaultWorkingDirectory)
+  const [model, setModel] = useState(defaultModel)
   const [approval, setApproval] = useState(true)
   const [pendingPermission, setPendingPermission] = useState<PendingPermission | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const sendRef = useRef<((content: string, wdOverride?: string) => Promise<void>) | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const configAppliedRef = useRef(false)
+
+  useEffect(() => {
+    if (!_loaded || configAppliedRef.current) return
+    configAppliedRef.current = true
+    setWorkingDirectory(defaultWorkingDirectory)
+    setModel(defaultModel)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_loaded])
 
   useEffect(() => {
     if (!sessionId) return

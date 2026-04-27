@@ -51,6 +51,148 @@ function CodeBlock({ className, children }: { className?: string; children?: Rea
   )
 }
 
+function DiffLines({ oldStr, newStr }: { oldStr: string; newStr: string }) {
+  const oldLines = oldStr ? oldStr.split('\n') : []
+  const newLines = newStr ? newStr.split('\n') : []
+  return (
+    <div className="rounded-lg overflow-hidden border border-[var(--border)] font-mono text-[11px] max-h-72 overflow-y-auto">
+      {oldLines.map((line, i) => (
+        <div key={`r${i}`} className="flex px-3 py-[1px] min-h-[18px] bg-[var(--error)]/8">
+          <span className="shrink-0 w-4 text-[var(--error)]/60 select-none">-</span>
+          <span className="text-[var(--error)] whitespace-pre-wrap break-all">{line || ' '}</span>
+        </div>
+      ))}
+      {newLines.map((line, i) => (
+        <div key={`a${i}`} className="flex px-3 py-[1px] min-h-[18px] bg-[var(--success)]/8">
+          <span className="shrink-0 w-4 text-[var(--success)]/60 select-none">+</span>
+          <span className="text-[var(--success)] whitespace-pre-wrap break-all">{line || ' '}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ToolInputView({ name, input }: { name: string; input: Record<string, unknown> }) {
+  if (name === 'Edit') {
+    return (
+      <div className="space-y-1.5">
+        {!!input.replace_all && (
+          <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] font-medium">replace_all</span>
+        )}
+        <DiffLines oldStr={String(input.old_string ?? '')} newStr={String(input.new_string ?? '')} />
+      </div>
+    )
+  }
+  if (name === 'MultiEdit') {
+    const edits = (input.edits as Array<{ file_path?: string; old_string?: string; new_string?: string }>) || []
+    return (
+      <div className="space-y-3">
+        {edits.map((edit, i) => (
+          <div key={i}>
+            {edit.file_path && <p className="font-mono text-[10px] text-[var(--text-muted)] mb-1 truncate">{edit.file_path}</p>}
+            <DiffLines oldStr={edit.old_string ?? ''} newStr={edit.new_string ?? ''} />
+          </div>
+        ))}
+      </div>
+    )
+  }
+  if (name === 'Write') {
+    const lines = String(input.content ?? '').split('\n')
+    return (
+      <div className="rounded-lg overflow-hidden border border-[var(--border)] font-mono text-[11px] max-h-72 overflow-y-auto">
+        {lines.map((line, i) => (
+          <div key={i} className="flex px-3 py-[1px] min-h-[18px] hover:bg-[var(--bg-secondary)]/60">
+            <span className="shrink-0 w-8 text-right text-[var(--text-muted)]/50 select-none mr-3">{i + 1}</span>
+            <span className="text-[var(--text-secondary)] whitespace-pre-wrap break-all">{line || ' '}</span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  if (name === 'Bash') {
+    const desc = input.description ? String(input.description) : null
+    return (
+      <div className="rounded-lg overflow-hidden border border-[var(--border)]">
+        {desc && (
+          <div className="px-3 py-1.5 bg-[var(--bg-tertiary)]/60 border-b border-[var(--border)] text-[11px] text-[var(--text-secondary)] italic">{desc}</div>
+        )}
+        <pre className="px-3 py-2.5 font-mono text-[11px] text-[var(--text-primary)] whitespace-pre-wrap break-all leading-relaxed max-h-48 overflow-y-auto bg-[var(--bg-secondary)]/40">
+          {String(input.command ?? '')}
+        </pre>
+      </div>
+    )
+  }
+  const kvKeys: Record<string, string[]> = {
+    Read: ['file_path', 'offset', 'limit'],
+    Glob: ['pattern', 'path'],
+    Grep: ['pattern', 'path', 'include'],
+  }
+  if (kvKeys[name]) {
+    return (
+      <div className="space-y-1">
+        {kvKeys[name].filter(k => input[k] != null).map(k => (
+          <div key={k} className="flex gap-2 font-mono text-[11px]">
+            <span className="text-[var(--text-secondary)] shrink-0">{k}:</span>
+            <span className="text-[var(--text-primary)] break-all">{String(input[k])}</span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  if (name === 'TodoWrite') {
+    const todos = (input.todos as Array<{ content?: string; status?: string; priority?: string }>) || []
+    return (
+      <div className="space-y-1.5">
+        {todos.map((todo, i) => {
+          const status = todo.status ?? 'pending'
+          return (
+            <div key={i} className={cn(
+              'flex items-start gap-2.5 px-3 py-2 rounded-lg border text-[12px]',
+              status === 'completed' ? 'bg-[var(--success)]/8 border-[var(--success)]/20'
+                : status === 'in_progress' ? 'bg-[var(--accent)]/8 border-[var(--accent)]/20'
+                : 'bg-[var(--bg-tertiary)]/40 border-[var(--border)]'
+            )}>
+              <span className="mt-[1px] shrink-0 text-[13px]">
+                {status === 'completed' ? '✓' : status === 'in_progress' ? '◉' : '○'}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className={cn('leading-snug break-words', status === 'completed' ? 'line-through text-[var(--text-tertiary)]' : 'text-[var(--text-primary)]')}>
+                  {todo.content}
+                </p>
+                {todo.priority && <span className="text-[10px] text-[var(--text-muted)]">{todo.priority}</span>}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+  return (
+    <pre className="text-[11px] font-mono text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap break-words max-h-48 overflow-y-auto">
+      {JSON.stringify(input, null, 2)}
+    </pre>
+  )
+}
+
+function ToolOutputView({ output, toolName }: { output: string; toolName: string }) {
+  if (!output) return null
+  if (toolName === 'Glob' || toolName === 'Grep') {
+    const lines = output.split('\n').filter(Boolean)
+    return (
+      <div className="max-h-48 overflow-y-auto space-y-0.5">
+        {lines.map((line, i) => (
+          <div key={i} className="font-mono text-[11px] text-[var(--text-secondary)] px-2 py-0.5 rounded hover:bg-[var(--bg-secondary)] truncate">{line}</div>
+        ))}
+      </div>
+    )
+  }
+  return (
+    <pre className="text-[11px] font-mono whitespace-pre-wrap break-words text-[var(--text-secondary)] leading-relaxed max-h-56 overflow-y-auto">
+      {output}
+    </pre>
+  )
+}
+
 function ToolCallRow({
   tool,
   pending,
@@ -124,21 +266,13 @@ function ToolCallRow({
       {open && (
         <div className="mt-2 ml-6 space-y-2">
           <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/40 border border-[var(--border)]">
-            <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-              Input
-            </div>
-            <pre className="text-[11px] font-mono overflow-x-auto text-[var(--text-secondary)] leading-relaxed">
-              {JSON.stringify(tool.input, null, 2)}
-            </pre>
+            <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Input</div>
+            <ToolInputView name={tool.name} input={tool.input} />
           </div>
           {tool.output && (
             <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/40 border border-[var(--border)]">
-              <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                Output
-              </div>
-              <pre className="text-[11px] font-mono overflow-x-auto whitespace-pre-wrap break-words text-[var(--text-secondary)] leading-relaxed">
-                {tool.output}
-              </pre>
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Output</div>
+              <ToolOutputView output={tool.output} toolName={tool.name} />
             </div>
           )}
         </div>

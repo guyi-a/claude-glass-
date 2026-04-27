@@ -2,11 +2,26 @@ import json
 import os
 import uuid
 from contextlib import asynccontextmanager
+from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+
+load_dotenv(Path(__file__).with_name(".env"))
+
+_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "config.json"
+
+def _load_config() -> dict:
+    try:
+        with open(_CONFIG_PATH) as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+_CFG = _load_config()
 
 from claude_runner import run_claude
 from session_manager import (
@@ -28,7 +43,7 @@ from permission_manager import (
     clear,
 )
 
-HOOK_COMMAND = "bash /Users/guyi/claude-glass-/backend/hook.sh"
+HOOK_COMMAND = f"bash {Path(__file__).parent / 'hook.sh'}"
 
 
 def setup_hook() -> None:
@@ -189,7 +204,7 @@ async def get_sessions():
 
 class CreateSessionRequest(BaseModel):
     title: str = "新对话"
-    working_directory: str = "~"
+    working_directory: str = _CFG.get("defaultWorkingDirectory", "~")
 
 
 @app.post("/api/sessions")
@@ -219,3 +234,16 @@ async def remove_session(session_id: str):
     if not ok:
         raise HTTPException(status_code=404, detail="Session not found")
     return {"ok": True}
+
+
+@app.get("/api/config")
+async def get_config():
+    cfg = _load_config()
+    home = os.path.expanduser("~")
+    return {
+        "homeDir": home,
+        "defaultWorkingDirectory": cfg.get("defaultWorkingDirectory", home),
+        "defaultModel": cfg.get("defaultModel", "pa/claude-sonnet-4-6"),
+        "models": cfg.get("models", []),
+        "workspaces": cfg.get("workspaces", []),
+    }

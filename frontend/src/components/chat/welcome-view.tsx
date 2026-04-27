@@ -1,18 +1,9 @@
 import { ChatInput } from './chat-input'
 import { FolderOpen, Sparkles, Zap, ArrowLeft } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { useConfig, shortenPath } from '../../hooks/use-config'
 
-const WORKSPACES = [
-  { name: 'krow-agent',    path: '/Users/guyi/krow-agent' },
-  { name: 'krow-app',      path: '/Users/guyi/krow-app' },
-  { name: 'Ling-Agent',    path: '/Users/guyi/Ling-Agent' },
-  { name: 'claude-glass-', path: '/Users/guyi/claude-glass-' },
-]
-
-const MODELS = [
-  { id: 'pa/claude-opus-4-6',   label: 'Opus',   desc: '最强推理', icon: Sparkles },
-  { id: 'pa/claude-sonnet-4-6', label: 'Sonnet', desc: '快速高效', icon: Zap },
-]
+const MODEL_ICONS = { sparkles: Sparkles, zap: Zap } as const
 
 type Props = {
   onSend: (message: string) => void
@@ -24,6 +15,8 @@ type Props = {
 }
 
 export function WelcomeView({ onSend, workingDirectory, onSelectWorkspace, model, onSelectModel, onBack }: Props) {
+  const { models, workspaces, homeDir } = useConfig()
+
   return (
     <div className="h-full flex flex-col">
       {onBack && (
@@ -68,7 +61,8 @@ export function WelcomeView({ onSend, workingDirectory, onSelectWorkspace, model
         <div className="w-full animate-enter" style={{ animationDelay: '100ms' }}>
           <p className="text-[13px] font-medium text-[var(--text-secondary)] tracking-widest mb-4 text-center">模型</p>
           <div className="flex justify-center gap-5">
-            {MODELS.map(({ id, label, desc, icon: Icon }) => {
+            {models.map(({ id, label, desc, icon }) => {
+              const Icon = MODEL_ICONS[icon] ?? Zap
               const isSelected = model === id
               return (
                 <button
@@ -111,7 +105,7 @@ export function WelcomeView({ onSend, workingDirectory, onSelectWorkspace, model
         <div className="w-full animate-enter" style={{ animationDelay: '140ms' }}>
           <p className="text-[13px] font-medium text-[var(--text-secondary)] tracking-widest mb-4 text-center">工作区</p>
           <div className="grid grid-cols-4 gap-5">
-            {WORKSPACES.map(({ name, path }, i) => {
+            {workspaces.map(({ name, path }, i) => {
               const isSelected = workingDirectory === path
               return (
                 <button
@@ -149,7 +143,7 @@ export function WelcomeView({ onSend, workingDirectory, onSelectWorkspace, model
                       "text-[11px] leading-tight font-mono truncate max-w-full px-1",
                       isSelected ? "text-white/60" : "text-[var(--text-muted)]"
                     )}>
-                      {path.replace('/Users/guyi/', '~/')}
+                      {shortenPath(path, homeDir)}
                     </span>
                   </div>
                 </button>

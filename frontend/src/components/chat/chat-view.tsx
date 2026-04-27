@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { ArrowLeft, Plus, Shield, ShieldOff } from 'lucide-react'
+import { ArrowLeft, Shield, ShieldOff } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useChat } from '../../hooks/use-chat'
 import { useSessionStore } from '../../stores/session-store'

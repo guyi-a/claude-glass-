@@ -2,9 +2,11 @@ import { useEffect } from 'react'
 import { Plus, MessageSquare, Trash2, FolderOpen } from 'lucide-react'
 import { useSessionStore, type Session } from '../stores/session-store'
 import { cn } from '../lib/utils'
+import { useConfig, shortenPath } from '../hooks/use-config'
 
-function SessionCard({ session, onOpen, onDelete }: {
+function SessionCard({ session, homeDir, onOpen, onDelete }: {
   session: Session
+  homeDir: string
   onOpen: () => void
   onDelete: () => void
 }) {
@@ -39,7 +41,7 @@ function SessionCard({ session, onOpen, onDelete }: {
           <div className="flex items-center gap-1 mt-1.5">
             <FolderOpen size={11} className="text-[var(--text-muted)] shrink-0" />
             <span className="text-[11px] text-[var(--text-muted)] truncate font-mono">
-              {session.working_directory.replace('/Users/guyi/', '~/')}
+              {shortenPath(session.working_directory, homeDir)}
             </span>
           </div>
         )}
@@ -50,6 +52,7 @@ function SessionCard({ session, onOpen, onDelete }: {
 
 export function SessionsPage() {
   const { sessions, fetchSessions, createSession, deleteSession } = useSessionStore()
+  const { homeDir } = useConfig()
 
   useEffect(() => {
     fetchSessions()
@@ -122,6 +125,7 @@ export function SessionsPage() {
                 <SessionCard
                   key={s.id}
                   session={s}
+                  homeDir={homeDir}
                   onOpen={() => handleOpen(s.id)}
                   onDelete={() => deleteSession(s.id)}
                 />
@@ -140,6 +144,7 @@ export function SessionsPage() {
                 <SessionCard
                   key={s.id}
                   session={s}
+                  homeDir={homeDir}
                   onOpen={() => handleOpen(s.id)}
                   onDelete={() => deleteSession(s.id)}
                 />

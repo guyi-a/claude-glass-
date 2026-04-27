@@ -1,0 +1,14 @@
+{
+  "defaultWorkingDirectory": "/Users/guyi",
+  "defaultModel": "pa/claude-sonnet-4-6",
+  "models": [
+    { "id": "pa/claude-opus-4-6",   "label": "Opus",   "desc": "最强推理", "icon": "sparkles" },
+    { "id": "pa/claude-sonnet-4-6", "label": "Sonnet", "desc": "快速高效", "icon": "zap" }
+  ],
+  "workspaces": [
+    { "name": "krow-agent",    "path": "/Users/guyi/krow-agent" },
+    { "name": "krow-app",      "path": "/Users/guyi/krow-app" },
+    { "name": "Ling-Agent",    "path": "/Users/guyi/Ling-Agent" },
+    { "name": "claude-glass-", "path": "/Users/guyi/claude-glass-" }
+  ]
+}

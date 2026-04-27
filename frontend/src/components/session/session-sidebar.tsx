@@ -84,8 +84,8 @@ function SessionItem({ session, isActive, onSelect, onDelete }: {
   )
 }
 
-export function SessionSidebar() {
-  const { sessions, activeId, fetchSessions, createSession, deleteSession, setActive } = useSessionStore()
+export function SessionSidebar({ activeSessionId }: { activeSessionId: string }) {
+  const { sessions, fetchSessions, deleteSession, setActive } = useSessionStore()
   const [collapsed, setCollapsed] = useState(false)
   const [width, setWidth] = useState(280)
   const dragging = useRef(false)
@@ -118,13 +118,8 @@ export function SessionSidebar() {
   }, [fetchSessions])
 
   const handleNew = async () => {
-    const empty = sessions.find(s => !s.has_messages)
-    if (empty) {
-      setActive(empty.id)
-      window.location.hash = `/chat/${empty.id}`
-      return
-    }
-    await createSession()
+    setActive(null)
+    window.location.hash = '/'
   }
 
   if (collapsed) {
@@ -190,8 +185,11 @@ export function SessionSidebar() {
               <SessionItem
                 key={session.id}
                 session={session}
-                isActive={session.id === activeId}
-                onSelect={() => setActive(session.id)}
+                isActive={session.id === activeSessionId}
+                onSelect={() => {
+                  setActive(session.id)
+                  window.location.hash = `/chat/${session.id}`
+                }}
                 onDelete={() => deleteSession(session.id)}
               />
             ))}
