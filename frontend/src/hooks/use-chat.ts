@@ -1,10 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { useSessionStore } from '../stores/session-store'
 
 export type ToolCall = {
   id: string
   name: string
   input: Record<string, unknown>
+  output?: string
   status: 'running' | 'done' | 'error'
 }
 
@@ -245,5 +245,36 @@ function processEvent(
     }
 
     setMessages(prev => [...prev.slice(0, -1), { ...assistantMsg, blocks: [...assistantMsg.blocks] }])
+    return
+  }
+
+  if (obj.type === 'user') {
+    const msg = obj.message as { content?: Array<{ type?: string; tool_use_id?: string; content?: unknown }> }
+    if (!msg?.content) return
+
+    let changed = false
+    for (const block of msg.content) {
+      if (block.type !== 'tool_result' || !block.tool_use_id) continue
+      const target = assistantMsg.blocks.find(
+        (item): item is Extract<ContentBlock, { type: 'tool_use' }> => item.type === 'tool_use' && item.tool.id === block.tool_use_id
+      )
+      if (!target) continue
+      target.tool.output = stringifyToolResult(block.content)
+      changed = true
+    }
+
+    if (changed) {
+      setMessages(prev => [...prev.slice(0, -1), { ...assistantMsg, blocks: [...assistantMsg.blocks] }])
+    }
+  }
+}
+
+function stringifyToolResult(content: unknown): string {
+  if (typeof content === 'string') return content
+  if (content == null) return ''
+  try {
+    return JSON.stringify(content, null, 2)
+  } catch {
+    return String(content)
   }
 }

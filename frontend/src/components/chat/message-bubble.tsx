@@ -122,10 +122,26 @@ function ToolCallRow({
       </div>
 
       {open && (
-        <pre className="mt-2 ml-6 p-4 rounded-xl bg-[var(--bg-secondary)]/40 border border-[var(--border)]
-          text-[11px] font-mono overflow-x-auto text-[var(--text-secondary)] leading-relaxed">
-          {JSON.stringify(tool.input, null, 2)}
-        </pre>
+        <div className="mt-2 ml-6 space-y-2">
+          <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/40 border border-[var(--border)]">
+            <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+              Input
+            </div>
+            <pre className="text-[11px] font-mono overflow-x-auto text-[var(--text-secondary)] leading-relaxed">
+              {JSON.stringify(tool.input, null, 2)}
+            </pre>
+          </div>
+          {tool.output && (
+            <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/40 border border-[var(--border)]">
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                Output
+              </div>
+              <pre className="text-[11px] font-mono overflow-x-auto whitespace-pre-wrap break-words text-[var(--text-secondary)] leading-relaxed">
+                {tool.output}
+              </pre>
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
