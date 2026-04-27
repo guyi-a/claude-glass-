@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/dmsans/v15/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAop-hSA.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/instrumentserif/v4/jizBRFtNs2ka5fCjOQ3GCOlGI_ZQNHU.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/instrumentserif/v4/jizHRFtNs2ka5fCjOQ3GCOhKw8aTLQ.woff2) format('woff2');
+}
+
+:root {
+  --bg-base: #f4f1ec;
+  --bg-primary: #f7f5f1;
+  --bg-secondary: #efede8;
+  --bg-tertiary: #e8e5df;
+  --bg-elevated: #fffffe;
+  --bg-glass: rgba(255, 255, 254, 0.72);
+  --text-primary: #1a1714;
+  --text-secondary: #5c5650;
+  --text-tertiary: #9b9590;
+  --text-muted: #c2bdb6;
+  --accent: #c96442;
+  --accent-soft: rgba(201, 100, 66, 0.08);
+  --accent-hover: #b85838;
+  --accent-glow: rgba(201, 100, 66, 0.15);
+  --success: #5ab87a;
+  --error: #d94444;
+  --border: rgba(42, 37, 32, 0.08);
+  --border-strong: rgba(42, 37, 32, 0.12);
+  --shadow-xs: 0 1px 2px rgba(42, 37, 32, 0.05);
+  --shadow-sm: 0 1px 3px rgba(42, 37, 32, 0.06), 0 1px 2px rgba(42, 37, 32, 0.04);
+  --shadow-md: 0 4px 12px rgba(42, 37, 32, 0.06), 0 1px 3px rgba(42, 37, 32, 0.08);
+  --shadow-lg: 0 12px 40px rgba(42, 37, 32, 0.08), 0 4px 12px rgba(42, 37, 32, 0.04);
+  --shadow-glass: 0 8px 32px rgba(42, 37, 32, 0.08), 0 2px 8px rgba(42, 37, 32, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-mono: 'SF Mono', ui-monospace, 'Cascadia Code', monospace;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201, 100, 66, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(201, 100, 66, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 10% 60%, rgba(90, 184, 122, 0.03) 0%, transparent 50%);
+}
+
+/* Subtle grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(42, 37, 32, 0.12);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(42, 37, 32, 0.2);
+}
+
+/* Glass surface utility */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-glass);
+}
+
+/* Shiki code blocks */
+.shiki {
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-x: auto;
+  background: var(--bg-secondary) !important;
+}
+
+.shiki code {
+  font-family: var(--font-mono);
+}
+
+/* Keyframes */
+@keyframes enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(1deg); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes cursor-blink {
+  0%, 45% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+
+.animate-enter {
+  animation: enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade {
+  animation: fade-in 0.35s ease both;
+}
+
+/* Markdown prose */
+.chat-prose {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.chat-prose p { margin: 0.5em 0; }
+.chat-prose p:first-child { margin-top: 0; }
+.chat-prose p:last-child { margin-bottom: 0; }
+
+.chat-prose h1, .chat-prose h2, .chat-prose h3,
+.chat-prose h4, .chat-prose h5, .chat-prose h6 {
+  font-family: var(--font-serif);
+  color: var(--text-primary);
+  font-weight: 400;
+  margin: 1.5em 0 0.5em;
+  letter-spacing: -0.01em;
+}
+.chat-prose h1:first-child, .chat-prose h2:first-child,
+.chat-prose h3:first-child { margin-top: 0; }
+
+.chat-prose h1 { font-size: 1.5rem; }
+.chat-prose h2 { font-size: 1.25rem; }
+.chat-prose h3 { font-size: 1.125rem; }
+
+.chat-prose strong { font-weight: 600; }
+
+.chat-prose a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.chat-prose a:hover { opacity: 0.8; }
+
+.chat-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+}
+
+.chat-prose pre { margin: 0.75em 0; }
+.chat-prose pre code {
+  color: inherit;
+  background: none;
+  padding: 0;
+}
+
+.chat-prose ul, .chat-prose ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+.chat-prose li { margin: 0.2em 0; }
+
+.chat-prose blockquote {
+  border-left: 2px solid var(--text-muted);
+  padding-left: 1em;
+  margin: 0.75em 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.chat-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75em 0;
+  font-size: 14px;
+}
+.chat-prose th, .chat-prose td {
+  border: 1px solid var(--border-strong);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+.chat-prose th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+}
+
+.chat-prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5em 0;
+}
