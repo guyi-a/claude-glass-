@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { Plus, Trash2, MessageSquare, PanelLeftClose, PanelLeft } from 'lucide-react'
 import { useSessionStore, type Session } from '../../stores/session-store'
 import { cn } from '../../lib/utils'
+import { navigate } from '../../lib/navigate'
 
 type SessionGroup = { label: string; sessions: Session[] }
 
@@ -87,7 +88,7 @@ function SessionItem({ session, isActive, onSelect, onDelete }: {
 export function SessionSidebar({ activeSessionId }: { activeSessionId: string }) {
   const { sessions, fetchSessions, deleteSession, setActive } = useSessionStore()
   const [collapsed, setCollapsed] = useState(false)
-  const [width, setWidth] = useState(280)
+  const [width, setWidth] = useState(400)
   const dragging = useRef(false)
 
   const groups = useMemo(() => groupByDate(sessions), [sessions])
@@ -119,7 +120,7 @@ export function SessionSidebar({ activeSessionId }: { activeSessionId: string })
 
   const handleNew = async () => {
     setActive(null)
-    window.location.hash = '/'
+    navigate('/')
   }
 
   if (collapsed) {
@@ -188,7 +189,7 @@ export function SessionSidebar({ activeSessionId }: { activeSessionId: string })
                 isActive={session.id === activeSessionId}
                 onSelect={() => {
                   setActive(session.id)
-                  window.location.hash = `/chat/${session.id}`
+                  navigate(`/chat/${session.id}`)
                 }}
                 onDelete={() => deleteSession(session.id)}
               />

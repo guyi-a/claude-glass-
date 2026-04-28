@@ -2,20 +2,19 @@ import { useState, useEffect } from 'react'
 import { ChatPage } from './pages/chat-page'
 import { SessionSidebar } from './components/session/session-sidebar'
 
-function parseHash(hash: string): { page: 'welcome' | 'chat'; sessionId?: string } {
-  const path = hash.replace(/^#\/?/, '') || ''
-  const chatMatch = path.match(/^chat\/(.+)$/)
+function parsePath(pathname: string): { page: 'welcome' | 'chat'; sessionId?: string } {
+  const chatMatch = pathname.match(/^\/chat\/(.+)$/)
   if (chatMatch) return { page: 'chat', sessionId: chatMatch[1] }
   return { page: 'welcome' }
 }
 
 export function App() {
-  const [route, setRoute] = useState(() => parseHash(window.location.hash))
+  const [route, setRoute] = useState(() => parsePath(window.location.pathname))
 
   useEffect(() => {
-    const onHashChange = () => setRoute(parseHash(window.location.hash))
-    window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
+    const handler = () => setRoute(parsePath(window.location.pathname))
+    window.addEventListener('popstate', handler)
+    return () => window.removeEventListener('popstate', handler)
   }, [])
 
   const sessionId = route.page === 'chat' ? (route.sessionId ?? '') : ''

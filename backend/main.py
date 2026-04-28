@@ -247,3 +247,76 @@ async def get_config():
         "models": cfg.get("models", []),
         "workspaces": cfg.get("workspaces", []),
     }
+
+
+@app.get("/api/fs/list")
+async def list_directory(path: str = "~"):
+    expanded = os.path.expanduser(path)
+    try:
+        entries = []
+        with os.scandir(expanded) as it:
+            for entry in sorted(it, key=lambda e: (not e.is_dir(), e.name.lower())):
+                if entry.is_dir() and not entry.name.startswith('.'):
+                    entries.append({"name": entry.name, "path": entry.path})
+        parent = str(os.path.dirname(expanded)) if expanded != "/" else None
+        return {"path": expanded, "parent": parent, "entries": entries}
+    except PermissionError:
+        return {"path": expanded, "parent": None, "entries": [], "error": "Permission denied"}
+
+
+class AddWorkspaceRequest(BaseModel):
+    name: str
+    path: str
+
+
+@app.delete("/api/config/workspaces")
+async def remove_workspace(path: str):
+    cfg = _load_config()
+    cfg["workspaces"] = [w for w in cfg.get("workspaces", []) if w["path"] != path]
+    with open(_CONFIG_PATH, "w") as f:
+        json.dump(cfg, f, indent=2, ensure_ascii=False)
+    return {"ok": True}
+
+
+@app.post("/api/config/workspaces")
+async def add_workspace(req: AddWorkspaceRequest):
+    cfg = _load_config()
+    workspaces: list = cfg.get("workspaces", [])
+    path = req.path.strip()
+    if any(w["path"] == path for w in workspaces):
+        raise HTTPException(status_code=409, detail="该工作区已存在")
+    workspaces.append({"name": req.name.strip(), "path": path})
+    cfg["workspaces"] = workspaces
+    with open(_CONFIG_PATH, "w") as f:
+        json.dump(cfg, f, indent=2, ensure_ascii=False)
+    return {"ok": True, "workspaces": workspaces}
+
+
+class AddModelRequest(BaseModel):
+    id: str
+    label: str
+    desc: str = ""
+    icon: str = "zap"
+
+
+@app.post("/api/config/models")
+async def add_model(req: AddModelRequest):
+    cfg = _load_config()
+    models: list = cfg.get("models", [])
+    model_id = req.id.strip()
+    if any(m["id"] == model_id for m in models):
+        raise HTTPException(status_code=409, detail="该模型已存在")
+    models.append({"id": model_id, "label": req.label.strip(), "desc": req.desc.strip(), "icon": req.icon})
+    cfg["models"] = models
+    with open(_CONFIG_PATH, "w") as f:
+        json.dump(cfg, f, indent=2, ensure_ascii=False)
+    return {"ok": True}
+
+
+@app.delete("/api/config/models")
+async def remove_model(id: str):
+    cfg = _load_config()
+    cfg["models"] = [m for m in cfg.get("models", []) if m["id"] != id]
+    with open(_CONFIG_PATH, "w") as f:
+        json.dump(cfg, f, indent=2, ensure_ascii=False)
+    return {"ok": True}

@@ -24,24 +24,30 @@ export type PendingPermission = {
   tool_input: Record<string, unknown>
 }
 
+export type StreamingStats = {
+  elapsed: number        // seconds
+  inputTokens: number | null
+}
+
 export function useChat(sessionId: string) {
-  const { defaultWorkingDirectory, defaultModel, _loaded } = useConfig()
+  const { defaultWorkingDirectory, _loaded } = useConfig()
   const [messages, setMessages] = useState<Message[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
+  const [streamingStats, setStreamingStats] = useState<StreamingStats>({ elapsed: 0, inputTokens: null })
   const [workingDirectory, setWorkingDirectory] = useState(defaultWorkingDirectory)
-  const [model, setModel] = useState(defaultModel)
+  const [model, setModel] = useState('')
   const [approval, setApproval] = useState(true)
   const [pendingPermission, setPendingPermission] = useState<PendingPermission | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const sendRef = useRef<((content: string, wdOverride?: string) => Promise<void>) | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const configAppliedRef = useRef(false)
 
   useEffect(() => {
     if (!_loaded || configAppliedRef.current) return
     configAppliedRef.current = true
     setWorkingDirectory(defaultWorkingDirectory)
-    setModel(defaultModel)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [_loaded])
 
@@ -123,6 +129,11 @@ export function useChat(sessionId: string) {
     const dir = wdOverride ?? workingDirectory
     setMessages(prev => [...prev, { role: 'user', content, blocks: [{ type: 'text', text: content }] }])
     setIsStreaming(true)
+    const startTime = Date.now()
+    setStreamingStats({ elapsed: 0, inputTokens: null })
+    timerRef.current = setInterval(() => {
+      setStreamingStats(s => ({ ...s, elapsed: Math.floor((Date.now() - startTime) / 1000) }))
+    }, 1000)
 
     const assistantMsg: Message = { role: 'assistant', content: '', blocks: [] }
     setMessages(prev => [...prev, assistantMsg])
@@ -164,6 +175,11 @@ export function useChat(sessionId: string) {
 
           try {
             const obj = JSON.parse(data)
+            // Extract token usage from system/result events
+            const usage = obj?.usage ?? obj?.message?.usage
+            if (usage?.input_tokens != null) {
+              setStreamingStats(s => ({ ...s, inputTokens: usage.input_tokens }))
+            }
             processEvent(obj, assistantMsg, setMessages)
           } catch {
             //
@@ -180,6 +196,7 @@ export function useChat(sessionId: string) {
       assistantMsg.blocks.push({ type: 'text', text: '[连接错误]' })
       setMessages(prev => [...prev.slice(0, -1), { ...assistantMsg, blocks: [...assistantMsg.blocks] }])
     } finally {
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
       setIsStreaming(false)
       abortRef.current = null
     }
@@ -207,6 +224,7 @@ export function useChat(sessionId: string) {
     messages,
     sendMessage,
     isStreaming,
+    streamingStats,
     stop,
     workingDirectory,
     setWorkingDirectory,

@@ -36,6 +36,11 @@ async function fetchConfig() {
   }
 }
 
+export function refreshConfig() {
+  cached = null
+  fetchConfig()
+}
+
 export function useConfig(): Config {
   const [config, setConfig] = useState<Config>(cached ?? DEFAULT)
 

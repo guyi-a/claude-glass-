@@ -1,5 +1,6 @@
 import { ChatView } from '../components/chat/chat-view'
 import { useSessionStore } from '../stores/session-store'
+import { navigate } from '../lib/navigate'
 
 type Props = {
   sessionId: string
@@ -9,13 +10,13 @@ export function ChatPage({ sessionId }: Props) {
   const { createSession, setActive } = useSessionStore()
 
   const handleBack = () => {
-    window.location.hash = '/'
+    navigate('/')
   }
 
   const handleSendNew = async (message: string, workingDirectory: string, model: string) => {
     const id = await createSession(workingDirectory)
     setActive(id)
-    window.location.hash = `/chat/${id}`
+    navigate(`/chat/${id}`)
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('send-message', {
         detail: { sessionId: id, message, workingDirectory, model },

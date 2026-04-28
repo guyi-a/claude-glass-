@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { ArrowLeft, Shield, ShieldOff } from 'lucide-react'
+import { ArrowLeft, Shield, ShieldOff, FolderOpen } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useChat } from '../../hooks/use-chat'
+import { useConfig, shortenPath } from '../../hooks/use-config'
 import { useSessionStore } from '../../stores/session-store'
 import { WelcomeView } from './welcome-view'
 import { MessageList } from './message-list'
@@ -18,6 +19,7 @@ export function ChatView({ sessionId, onSendNew, onBack }: Props) {
     messages,
     sendMessage,
     isStreaming,
+    streamingStats,
     stop,
     workingDirectory,
     setWorkingDirectory,
@@ -28,6 +30,7 @@ export function ChatView({ sessionId, onSendNew, onBack }: Props) {
     pendingPermission,
     respondPermission,
   } = useChat(sessionId)
+  const { workspaces, homeDir } = useConfig()
   const { renameSession } = useSessionStore()
   const titleSetRef = useRef(false)
   const hasMessages = messages.length > 0
@@ -50,6 +53,9 @@ export function ChatView({ sessionId, onSendNew, onBack }: Props) {
     ? (msg: string) => onSendNew(msg, workingDirectory, model)
     : sendMessage
 
+  const workspaceLabel = workspaces.find(w => w.path === workingDirectory)?.name
+    ?? (workingDirectory ? shortenPath(workingDirectory, homeDir) : null)
+
   if (!hasMessages) {
     return (
       <WelcomeView
@@ -58,7 +64,6 @@ export function ChatView({ sessionId, onSendNew, onBack }: Props) {
         onSelectWorkspace={setWorkingDirectory}
         model={model}
         onSelectModel={setModel}
-        onBack={onBack}
       />
     )
   }
@@ -82,7 +87,14 @@ export function ChatView({ sessionId, onSendNew, onBack }: Props) {
             flex items-center justify-center shadow-[var(--shadow-xs)]">
             <span className="text-[10px] text-white font-[var(--font-serif)] leading-none">G</span>
           </div>
-          <span className="text-[14px] font-medium text-[var(--text-primary)]">Claude Glass</span>
+          {workspaceLabel ? (
+            <div className="flex items-center gap-1.5">
+              <FolderOpen size={14} className="text-[var(--text-muted)] shrink-0" />
+              <span className="text-[14px] font-medium text-[var(--text-primary)]">{workspaceLabel}</span>
+            </div>
+          ) : (
+            <span className="text-[14px] font-medium text-[var(--text-primary)]">Claude Glass</span>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
@@ -100,24 +112,50 @@ export function ChatView({ sessionId, onSendNew, onBack }: Props) {
             {approval ? <Shield size={16} /> : <ShieldOff size={16} />}
           </button>
 
-          {isStreaming && (
+          {/* Pending permission — inline in header */}
+          {pendingPermission ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] text-[var(--accent)] font-medium truncate max-w-[160px]">
+                {pendingPermission.tool_name}
+              </span>
+              <button
+                onClick={() => respondPermission('deny')}
+                className="px-3 py-1 rounded-lg text-[12px] font-medium
+                  bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]/20
+                  hover:bg-[var(--error)]/20 transition-colors duration-150 active:scale-95"
+              >
+                拒绝
+              </button>
+              <button
+                onClick={() => respondPermission('allow')}
+                className="px-3 py-1 rounded-lg text-[12px] font-medium text-white
+                  bg-[var(--accent)] hover:bg-[var(--accent-hover)]
+                  transition-colors duration-150 active:scale-95"
+              >
+                允许
+              </button>
+            </div>
+          ) : isStreaming ? (
             <div className="flex items-center gap-2.5">
               <div className="flex gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-bounce [animation-delay:0ms]" />
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-bounce [animation-delay:150ms]" />
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-bounce [animation-delay:300ms]" />
               </div>
-              <span className="text-[12px] text-[var(--text-tertiary)]">生成中</span>
+              <span className="text-[12px] font-mono text-[var(--text-tertiary)]">
+                {streamingStats.elapsed}s
+                {streamingStats.inputTokens != null && (
+                  <> · {streamingStats.inputTokens.toLocaleString()} tokens</>
+                )}
+              </span>
             </div>
-          )}
+          ) : null}
         </div>
       </header>
 
       <MessageList
         messages={messages}
         pendingPermission={pendingPermission}
-        onAllow={() => respondPermission('allow')}
-        onDeny={() => respondPermission('deny')}
       />
 
       <ChatInput onSend={sendMessage} onStop={stop} isStreaming={isStreaming} variant="compact" />

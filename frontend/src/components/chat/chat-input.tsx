@@ -62,16 +62,16 @@ export function ChatInput({ onSend, onStop, isStreaming, variant }: Props) {
             rows={1}
             style={{ caretColor: isFocused ? 'var(--accent)' : 'transparent', paddingLeft: '2.5rem' }}
             className="relative z-10 block w-full min-h-[104px] resize-none bg-transparent outline-none
-              text-[15px] leading-relaxed pr-16 pt-8 pb-8
+              text-[15px] leading-relaxed pr-16 pt-5 pb-14
               text-[var(--text-primary)]"
           />
           {!value && !isFocused && (
             <div className="absolute pointer-events-none z-10"
-              style={{ left: '2.5rem', top: '2rem' }}>
+              style={{ left: '2.5rem', top: '1.25rem' }}>
               <span className="text-[15px] leading-relaxed text-[var(--text-muted)]">描述你想做的事情...</span>
             </div>
           )}
-          <div className="absolute inset-y-0 right-0 flex items-center px-5 z-20">
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end px-5 pb-4 z-20">
             <button
               onClick={handleSend}
               disabled={!canSend}

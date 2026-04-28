@@ -5,11 +5,9 @@ import type { Message, PendingPermission } from '../../hooks/use-chat'
 type Props = {
   messages: Message[]
   pendingPermission?: PendingPermission | null
-  onAllow?: () => void
-  onDeny?: () => void
 }
 
-export function MessageList({ messages, pendingPermission, onAllow, onDeny }: Props) {
+export function MessageList({ messages, pendingPermission }: Props) {
   const { scrollRef, contentRef } = useStickToBottom()
 
   return (
@@ -22,8 +20,6 @@ export function MessageList({ messages, pendingPermission, onAllow, onDeny }: Pr
             index={i}
             isLast={i === messages.length - 1}
             pendingPermission={pendingPermission}
-            onAllow={onAllow}
-            onDeny={onDeny}
           />
         ))}
       </div>

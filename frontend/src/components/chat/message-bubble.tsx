@@ -196,13 +196,9 @@ function ToolOutputView({ output, toolName }: { output: string; toolName: string
 function ToolCallRow({
   tool,
   pending,
-  onAllow,
-  onDeny,
 }: {
   tool: import('../../hooks/use-chat').ToolCall
   pending?: boolean
-  onAllow?: () => void
-  onDeny?: () => void
 }) {
   const [open, setOpen] = useState(true)
   const Icon = open ? ChevronDown : ChevronRight
@@ -230,7 +226,7 @@ function ToolCallRow({
             : <Check size={12} className="text-[var(--success)] shrink-0" />
           }
           <span className="font-medium text-[var(--text-secondary)]">{tool.name}</span>
-          <span className="text-[var(--text-muted)] truncate font-mono text-[11px]">
+          <span className="text-[var(--text-secondary)] truncate font-mono text-[11px]">
             {summarizeToolInput(tool.name, tool.input)}
           </span>
           {pending && (
@@ -241,37 +237,15 @@ function ToolCallRow({
           )}
         </button>
 
-        {pending && onAllow && onDeny && (
-          <div className="px-4 py-3 border-t border-[var(--accent)]/20 flex items-center justify-end gap-2 pr-12">
-            <button
-              onClick={onDeny}
-              className="px-4 py-1.5 rounded-lg text-[13px] font-medium
-                bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]/20
-                hover:bg-[var(--error)]/20 transition-colors duration-150 active:scale-95"
-            >
-              拒绝
-            </button>
-            <button
-              onClick={onAllow}
-              className="px-4 py-1.5 rounded-lg text-[13px] font-medium text-white
-                bg-[var(--accent)] hover:bg-[var(--accent-hover)]
-                transition-colors duration-150 active:scale-95"
-            >
-              允许
-            </button>
-          </div>
-        )}
       </div>
 
       {open && (
         <div className="mt-2 ml-6 space-y-2">
           <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/40 border border-[var(--border)]">
-            <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Input</div>
             <ToolInputView name={tool.name} input={tool.input} />
           </div>
           {tool.output && (
             <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/40 border border-[var(--border)]">
-              <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Output</div>
               <ToolOutputView output={tool.output} toolName={tool.name} />
             </div>
           )}
@@ -296,15 +270,11 @@ export const MessageBubble = memo(function MessageBubble({
   index,
   isLast,
   pendingPermission,
-  onAllow,
-  onDeny,
 }: {
   message: Message
   index: number
   isLast?: boolean
   pendingPermission?: PendingPermission | null
-  onAllow?: () => void
-  onDeny?: () => void
 }) {
   const isUser = message.role === 'user'
 
@@ -342,8 +312,6 @@ export const MessageBubble = memo(function MessageBubble({
                 key={block.tool.id || i}
                 tool={block.tool}
                 pending={isPending}
-                onAllow={isPending ? onAllow : undefined}
-                onDeny={isPending ? onDeny : undefined}
               />
             ) : (
               <div key={i} className="chat-prose pl-0.5">
