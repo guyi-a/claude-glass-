@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useConfig } from './use-config'
+import { useSessionStore } from '../stores/session-store'
 
 export type ToolCall = {
   id: string
@@ -50,6 +51,12 @@ export function useChat(sessionId: string) {
     setWorkingDirectory(defaultWorkingDirectory)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [_loaded])
+
+  const { sessions } = useSessionStore()
+  useEffect(() => {
+    const session = sessions.find(s => s.id === sessionId)
+    if (session?.working_directory) setWorkingDirectory(session.working_directory)
+  }, [sessionId, sessions])
 
   useEffect(() => {
     if (!sessionId) return
